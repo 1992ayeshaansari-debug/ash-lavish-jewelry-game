@@ -1,0 +1,248 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top, #2a220c 0%, #090909 35%, #030303 100%);
+    color: #fff;
+    font-family: Georgia, serif;
+    text-align: center;
+    overflow-x: hidden;
+}
+
+.game-container {
+    width: 100%;
+    max-width: 520px;
+    margin: auto;
+    padding: 25px 14px 45px;
+}
+
+/* TITLE */
+
+h1 {
+    color: #e5bd45;
+    font-size: 34px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 12px rgba(229, 189, 69, 0.45);
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #ddd;
+    font-size: 16px;
+    margin-bottom: 22px;
+}
+
+/* SCORE / MOVES */
+
+.game-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 auto 22px;
+    max-width: 430px;
+}
+
+.game-info div {
+    flex: 1;
+    background: linear-gradient(145deg, #1d1d1d, #101010);
+    border: 1px solid #d4af37;
+    border-radius: 16px;
+    padding: 12px 10px;
+    box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.5),
+        inset 0 0 15px rgba(212, 175, 55, 0.06);
+}
+
+.game-info span {
+    display: block;
+    color: #aaa;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.game-info strong {
+    color: #e5bd45;
+    font-size: 24px;
+}
+
+/* GAME BOARD */
+
+.game-board {
+    width: 100%;
+    max-width: 450px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    padding: 9px;
+
+    background: linear-gradient(145deg, #1c1c1c, #080808);
+
+    border: 2px solid #d4af37;
+    border-radius: 20px;
+
+    box-shadow:
+        0 0 25px rgba(212, 175, 55, 0.18),
+        inset 0 0 20px rgba(212, 175, 55, 0.04);
+}
+
+/* JEWEL */
+
+.jewel {
+    aspect-ratio: 1 / 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(145deg, #292929, #171717);
+
+    border: 1px solid #454545;
+    border-radius: 12px;
+
+    font-size: clamp(24px, 7vw, 36px);
+
+    cursor: pointer;
+    user-select: none;
+
+    transition:
+        transform 0.18s ease,
+        border 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease;
+
+    box-shadow:
+        inset 0 0 10px rgba(255, 255, 255, 0.03);
+}
+
+/* TAP EFFECT */
+
+.jewel:active {
+    transform: scale(0.82);
+}
+
+/* SELECTED JEWEL */
+
+.jewel.selected {
+    border: 2px solid #f7d96a;
+
+    background: linear-gradient(145deg, #3b3012, #171717);
+
+    transform: scale(0.91);
+
+    box-shadow:
+        0 0 12px rgba(247, 217, 106, 0.75),
+        inset 0 0 12px rgba(247, 217, 106, 0.12);
+}
+
+/* MATCH ANIMATION */
+
+.jewel.matching {
+    animation: jewelMatch 0.45s ease forwards;
+}
+
+@keyframes jewelMatch {
+
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    40% {
+        transform: scale(1.25) rotate(8deg);
+    }
+
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+/* BUTTONS */
+
+.restart-btn,
+.back-btn {
+    width: 90%;
+    max-width: 380px;
+
+    padding: 15px;
+
+    margin-top: 22px;
+
+    border-radius: 30px;
+
+    font-family: Georgia, serif;
+    font-size: 17px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.restart-btn {
+    background: linear-gradient(135deg, #f0c84b, #b88a18);
+    color: #111;
+    border: none;
+
+    box-shadow:
+        0 5px 18px rgba(212, 175, 55, 0.25);
+}
+
+.back-btn {
+    background: #171717;
+    color: #e5bd45;
+
+    border: 1px solid #d4af37;
+
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.4);
+}
+
+.restart-btn:active,
+.back-btn:active {
+    transform: scale(0.96);
+}
+
+/* MOBILE */
+
+@media (max-width: 380px) {
+
+    .game-container {
+        padding-left: 9px;
+        padding-right: 9px;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+    }
+
+    .game-board {
+        gap: 4px;
+        padding: 6px;
+        border-radius: 16px;
+    }
+
+    .jewel {
+        border-radius: 9px;
+    }
+
+    .game-info div {
+        padding: 9px 5px;
+    }
+
+    .game-info strong {
+        font-size: 21px;
+    }
+}
