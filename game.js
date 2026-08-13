@@ -1,23 +1,54 @@
 const board = document.getElementById("gameBoard");
 const scoreDisplay = document.getElementById("score");
+const gameMessage = document.getElementById("gameMessage");
+const playAgainBtn = document.getElementById("playAgainBtn");
 const movesDisplay = document.getElementById("moves");
 const restartBtn = document.getElementById("restartBtn");
 const backBtn = document.getElementById("backBtn");
+const musicBtn =
+    document.getElementById("musicBtn");
+
+const soundBtn =
+    document.getElementById("soundBtn");
 
 const highScoreDisplay =
     document.getElementById("highScore");
-    const timerDisplay =
-    document.getElementById("timer");
 
 const livesDisplay =
     document.getElementById("lives");
 
-let timeLeft = 60;
-let lives = 3;
-let timerInterval = null;
-    
-    const levelDisplay =
+const levelDisplay =
     document.getElementById("level");
+
+
+/* =========================
+   GAME SETTINGS
+========================= */
+
+const jewels = [
+    "💎",
+    "💍",
+    "👑",
+    "📿",
+    "💖",
+    "✨"
+];
+
+const rows = 10;
+const columns = 8;
+
+
+/* =========================
+   GAME VARIABLES
+========================= */
+
+let boardData = [];
+
+let score = 0;
+
+let moves = 30;
+
+let lives = 3;
 
 let level = 1;
 
@@ -25,29 +56,192 @@ let levelTarget = 500;
 
 let levelMoves = 30;
 
-let highScore =
-    Number(localStorage.getItem("jewelryHighScore")) || 0;
-
-highScoreDisplay.textContent = highScore;
-
-const jewels = ["💎", "💍", "👑", "📿", "💖", "✨"];
-
-const rows = 6;
-const columns = 6;
-
-let boardData = [];
-let score = 0;
-let moves = 30;
-
 let firstSelected = null;
+
 let secondSelected = null;
+
 let locked = false;
 
+let gameEnded = false;
+
+
 /* =========================
-   LUXURY GAME SOUNDS
+   LAST SWAP
+========================= */
+
+let lastSwap = null;
+
+
+/* =========================
+   HIGH SCORE
+========================= */
+
+let highScore =
+    Number(
+        localStorage.getItem(
+            "jewelryHighScore"
+        )
+    ) || 0;
+
+highScoreDisplay.textContent =
+    highScore;
+
+
+/* =========================
+   AUDIO SYSTEM
 ========================= */
 
 let audioContext = null;
+
+
+/* =========================
+   SOUND SETTINGS
+========================= */
+
+let soundEnabled =
+    localStorage.getItem("jewelrySound") !== "off";
+
+let musicEnabled =
+    localStorage.getItem("jewelryMusic") !== "off";
+
+
+/* =========================
+   UPDATE BUTTONS
+========================= */
+
+function updateSoundButtons() {
+
+    musicBtn.textContent =
+        musicEnabled
+            ? "🎵 Music ON"
+            : "🔇 Music OFF";
+
+    soundBtn.textContent =
+        soundEnabled
+            ? "🔊 Sound ON"
+            : "🔇 Sound OFF";
+}
+
+
+/* =========================
+   BACKGROUND MUSIC
+========================= */
+
+const backgroundMusic = new Audio("ash_music.wav");
+
+backgroundMusic.loop = true;
+
+backgroundMusic.volume = 0.10;
+
+
+/* =========================
+   START BACKGROUND MUSIC
+========================= */
+
+function startBackgroundMusic() {
+
+    if (!musicEnabled) {
+        return;
+    }
+
+    backgroundMusic
+        .play()
+        .catch(() => {});
+}
+
+
+/* =========================
+   STOP BACKGROUND MUSIC
+========================= */
+
+function stopBackgroundMusic() {
+
+    backgroundMusic.pause();
+
+    backgroundMusic.currentTime = 0;
+}
+
+
+/* =========================
+   MUSIC BUTTON
+========================= */
+
+musicBtn.addEventListener(
+    "click",
+    function() {
+
+        musicEnabled =
+            !musicEnabled;
+
+        localStorage.setItem(
+            "jewelryMusic",
+            musicEnabled
+                ? "on"
+                : "off"
+        );
+
+        if (musicEnabled) {
+
+            startBackgroundMusic();
+
+        } else {
+
+            stopBackgroundMusic();
+        }
+
+        updateSoundButtons();
+    }
+);
+
+/* =========================
+   START MUSIC ON FIRST TAP
+========================= */
+
+document.addEventListener(
+    "pointerdown",
+    function startMusicOnce() {
+
+        if (musicEnabled) {
+            startBackgroundMusic();
+        }
+
+        document.removeEventListener(
+            "pointerdown",
+            startMusicOnce
+        );
+
+    },
+    { once: true }
+);
+
+/* =========================
+   SOUND BUTTON
+========================= */
+
+soundBtn.addEventListener(
+    "click",
+    function() {
+
+        soundEnabled =
+            !soundEnabled;
+
+        localStorage.setItem(
+            "jewelrySound",
+            soundEnabled
+                ? "on"
+                : "off"
+        );
+
+        updateSoundButtons();
+    }
+);
+
+
+/* INITIAL BUTTON STATE */
+let musicStarted = false;
+let musicTimer = null;
+updateSoundButtons();
+
 
 function getAudioContext() {
 
@@ -57,12 +251,19 @@ function getAudioContext() {
             window.AudioContext ||
             window.webkitAudioContext;
 
-        if (!AudioContext) return null;
+        if (!AudioContext) {
+            return null;
+        }
 
-        audioContext = new AudioContext();
+        audioContext =
+            new AudioContext();
     }
 
-    if (audioContext.state === "suspended") {
+    if (
+        audioContext.state ===
+        "suspended"
+    ) {
+
         audioContext.resume();
     }
 
@@ -70,15 +271,19 @@ function getAudioContext() {
 }
 
 
-/* GEM MOVE / DROP SOUND */
+/* =========================
+   GEM MOVE SOUND
+========================= */
 
 function playMoveSound() {
-
-    const audio = getAudioContext();
+if (!soundEnabled) return;
+    const audio =
+        getAudioContext();
 
     if (!audio) return;
 
-    const now = audio.currentTime;
+    const now =
+        audio.currentTime;
 
     const oscillator =
         audio.createOscillator();
@@ -104,7 +309,7 @@ function playMoveSound() {
     );
 
     gain.gain.exponentialRampToValueAtTime(
-        0.12,
+        0.10,
         now + 0.015
     );
 
@@ -114,22 +319,32 @@ function playMoveSound() {
     );
 
     oscillator.connect(gain);
-    gain.connect(audio.destination);
+
+    gain.connect(
+        audio.destination
+    );
 
     oscillator.start(now);
-    oscillator.stop(now + 0.14);
+
+    oscillator.stop(
+        now + 0.14
+    );
 }
 
 
-/* BEAUTIFUL JEWEL MATCH SOUND */
+/* =========================
+   MATCH SOUND
+========================= */
 
 function playMatchSound() {
-
-    const audio = getAudioContext();
+if (!soundEnabled) return;
+    const audio =
+        getAudioContext();
 
     if (!audio) return;
 
-    const now = audio.currentTime;
+    const now =
+        audio.currentTime;
 
     const notes = [
         523.25,
@@ -138,51 +353,57 @@ function playMatchSound() {
         1046.50
     ];
 
-    notes.forEach((frequency, index) => {
+    notes.forEach(
+        (frequency, index) => {
 
-        const oscillator =
-            audio.createOscillator();
+            const oscillator =
+                audio.createOscillator();
 
-        const gain =
-            audio.createGain();
+            const gain =
+                audio.createGain();
 
-        const start =
-            now + index * 0.07;
+            const start =
+                now + index * 0.07;
 
-        oscillator.type = "sine";
+            oscillator.type =
+                "sine";
 
-        oscillator.frequency.setValueAtTime(
-            frequency,
-            start
-        );
+            oscillator.frequency.setValueAtTime(
+                frequency,
+                start
+            );
 
-        gain.gain.setValueAtTime(
-            0.001,
-            start
-        );
+            gain.gain.setValueAtTime(
+                0.001,
+                start
+            );
 
-        gain.gain.exponentialRampToValueAtTime(
-            0.16,
-            start + 0.015
-        );
+            gain.gain.exponentialRampToValueAtTime(
+                0.14,
+                start + 0.015
+            );
 
-        gain.gain.exponentialRampToValueAtTime(
-            0.001,
-            start + 0.35
-        );
+            gain.gain.exponentialRampToValueAtTime(
+                0.001,
+                start + 0.35
+            );
 
-        oscillator.connect(gain);
-        gain.connect(audio.destination);
+            oscillator.connect(gain);
 
-        oscillator.start(start);
+            gain.connect(
+                audio.destination
+            );
 
-        oscillator.stop(
-            start + 0.36
-        );
-    });
+            oscillator.start(start);
+
+            oscillator.stop(
+                start + 0.36
+            );
+        }
+    );
 
 
-    /* Extra sparkle */
+    /* EXTRA SPARKLE */
 
     const sparkle =
         audio.createOscillator();
@@ -190,7 +411,8 @@ function playMatchSound() {
     const sparkleGain =
         audio.createGain();
 
-    sparkle.type = "triangle";
+    sparkle.type =
+        "triangle";
 
     sparkle.frequency.setValueAtTime(
         1400,
@@ -208,7 +430,7 @@ function playMatchSound() {
     );
 
     sparkleGain.gain.exponentialRampToValueAtTime(
-        0.08,
+        0.06,
         now + 0.02
     );
 
@@ -217,13 +439,303 @@ function playMatchSound() {
         now + 0.22
     );
 
-    sparkle.connect(sparkleGain);
-    sparkleGain.connect(audio.destination);
+    sparkle.connect(
+        sparkleGain
+    );
+
+    sparkleGain.connect(
+        audio.destination
+    );
 
     sparkle.start(now);
 
-    sparkle.stop(now + 0.23);
+    sparkle.stop(
+        now + 0.23
+    );
 }
+
+
+/* =========================
+   WRONG MOVE SOUND
+========================= */
+
+function playWrongSound() {
+if (!soundEnabled) return;
+    const audio =
+        getAudioContext();
+
+    if (!audio) return;
+
+    const now =
+        audio.currentTime;
+
+    const oscillator =
+        audio.createOscillator();
+
+    const gain =
+        audio.createGain();
+
+    oscillator.type =
+        "triangle";
+
+    oscillator.frequency.setValueAtTime(
+        260,
+        now
+    );
+
+    oscillator.frequency.exponentialRampToValueAtTime(
+        120,
+        now + 0.20
+    );
+
+    gain.gain.setValueAtTime(
+        0.001,
+        now
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.10,
+        now + 0.02
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        now + 0.22
+    );
+
+    oscillator.connect(gain);
+
+    gain.connect(
+        audio.destination
+    );
+
+    oscillator.start(now);
+
+    oscillator.stop(
+        now + 0.23
+    );
+}
+
+
+/* =========================
+   SHUFFLE SOUND
+========================= */
+
+function playShuffleSound() {
+if (!soundEnabled) return;
+    const audio =
+        getAudioContext();
+
+    if (!audio) return;
+
+    const now =
+        audio.currentTime;
+
+    const notes = [
+        260,
+        340,
+        450,
+        600,
+        760
+    ];
+
+    notes.forEach(
+        (frequency, index) => {
+
+            const oscillator =
+                audio.createOscillator();
+
+            const gain =
+                audio.createGain();
+
+            const start =
+                now + index * 0.055;
+
+            oscillator.type =
+                "triangle";
+
+            oscillator.frequency.setValueAtTime(
+                frequency,
+                start
+            );
+
+            gain.gain.setValueAtTime(
+                0.001,
+                start
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                0.055,
+                start + 0.015
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                0.001,
+                start + 0.12
+            );
+
+            oscillator.connect(gain);
+
+            gain.connect(
+                audio.destination
+            );
+
+            oscillator.start(start);
+
+            oscillator.stop(
+                start + 0.13
+            );
+        }
+    );
+}
+
+
+/* =========================
+   LEVEL UP SOUND
+========================= */
+
+function playLevelUpSound() {
+if (!soundEnabled) return;
+    const audio =
+        getAudioContext();
+
+    if (!audio) return;
+
+    const now =
+        audio.currentTime;
+
+    const notes = [
+        392,
+        523.25,
+        659.25,
+        783.99,
+        1046.50
+    ];
+
+    notes.forEach(
+        (frequency, index) => {
+
+            const oscillator =
+                audio.createOscillator();
+
+            const gain =
+                audio.createGain();
+
+            const start =
+                now + index * 0.09;
+
+            oscillator.type =
+                "sine";
+
+            oscillator.frequency.setValueAtTime(
+                frequency,
+                start
+            );
+
+            gain.gain.setValueAtTime(
+                0.001,
+                start
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                0.12,
+                start + 0.02
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                0.001,
+                start + 0.42
+            );
+
+            oscillator.connect(gain);
+
+            gain.connect(
+                audio.destination
+            );
+
+            oscillator.start(start);
+
+            oscillator.stop(
+                start + 0.44
+            );
+        }
+    );
+}
+
+
+/* =========================
+   GAME OVER SOUND
+========================= */
+
+function playGameOverSound() {
+if (!soundEnabled) return;
+    const audio =
+        getAudioContext();
+
+    if (!audio) return;
+
+    const now =
+        audio.currentTime;
+
+    const notes = [
+        392,
+        330,
+        262,
+        196
+    ];
+
+    notes.forEach(
+        (frequency, index) => {
+
+            const oscillator =
+                audio.createOscillator();
+
+            const gain =
+                audio.createGain();
+
+            const start =
+                now + index * 0.16;
+
+            oscillator.type =
+                "sine";
+
+            oscillator.frequency.setValueAtTime(
+                frequency,
+                start
+            );
+
+            gain.gain.setValueAtTime(
+                0.001,
+                start
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                0.10,
+                start + 0.025
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                0.001,
+                start + 0.30
+            );
+
+            oscillator.connect(gain);
+
+            gain.connect(
+                audio.destination
+            );
+
+            oscillator.start(start);
+
+            oscillator.stop(
+                start + 0.31
+            );
+        }
+    );
+}
+
+
+
 
 
 /* =========================
@@ -232,95 +744,87 @@ function playMatchSound() {
 
 function startGame() {
 
+    gameMessage.classList.add(
+        "hidden"
+    );
+
     boardData = [];
 
     score = 0;
+
     moves = 30;
-    timeLeft = 60;
 
-lives = 3;
+    lives = 3;
 
-timerDisplay.textContent =
-    timeLeft;
-
-updateLives();
-
-startTimer();
-levelMoves = 30;
-    
     level = 1;
-levelTarget = 500;
 
-levelDisplay.textContent = level;
+    levelTarget = 500;
+
+    levelMoves = 30;
 
     firstSelected = null;
+
     secondSelected = null;
+
+    lastSwap = null;
+
     locked = false;
 
-    scoreDisplay.textContent = score;
-    movesDisplay.textContent = moves;
+    gameEnded = false;
 
-    for (let row = 0; row < rows; row++) {
+
+    updateLives();
+
+
+    scoreDisplay.textContent =
+        score;
+
+    movesDisplay.textContent =
+        moves;
+
+    levelDisplay.textContent =
+        level;
+
+
+    for (
+        let row = 0;
+        row < rows;
+        row++
+    ) {
 
         boardData[row] = [];
 
-        for (let col = 0; col < columns; col++) {
+        for (
+            let col = 0;
+            col < columns;
+            col++
+        ) {
 
             boardData[row][col] =
                 jewels[
                     Math.floor(
-                        Math.random() * jewels.length
+                        Math.random() *
+                        jewels.length
                     )
                 ];
         }
     }
 
+
     drawBoard();
 }
-function startTimer() {
 
-    clearInterval(timerInterval);
 
-    timerInterval = setInterval(() => {
+/* =========================
+   UPDATE LIVES
+========================= */
 
-        timeLeft--;
-
-        timerDisplay.textContent = timeLeft;
-
-        if (timeLeft <= 0) {
-
-            clearInterval(timerInterval);
-
-            loseLife();
-        }
-
-    }, 1000);
-}
-
-function loseLife() {
-
-    lives--;
-
-    updateLives();
-
-    if (lives <= 0) {
-
-        gameOver();
-
-        return;
-    }
-
-    timeLeft = 60;
-
-    timerDisplay.textContent = timeLeft;
-
-    startTimer();
-}
 function updateLives() {
 
     livesDisplay.textContent =
         "❤️".repeat(lives);
 }
+
 
 /* =========================
    DRAW BOARD
@@ -330,27 +834,43 @@ function drawBoard() {
 
     board.innerHTML = "";
 
-    for (let row = 0; row < rows; row++) {
+    for (
+        let row = 0;
+        row < rows;
+        row++
+    ) {
 
-        for (let col = 0; col < columns; col++) {
+        for (
+            let col = 0;
+            col < columns;
+            col++
+        ) {
 
             const cell =
-                document.createElement("div");
+                document.createElement(
+                    "div"
+                );
 
-            cell.className = "jewel";
+            cell.className =
+                "jewel";
 
             cell.textContent =
                 boardData[row][col];
 
-            cell.dataset.row = row;
-            cell.dataset.col = col;
+            cell.dataset.row =
+                row;
+
+            cell.dataset.col =
+                col;
 
             cell.addEventListener(
                 "click",
                 selectJewel
             );
 
-            board.appendChild(cell);
+            board.appendChild(
+                cell
+            );
         }
     }
 }
@@ -361,16 +881,26 @@ function drawBoard() {
 ========================= */
 
 function selectJewel(event) {
+    if (
+        locked ||
+        gameEnded
+    ) {
+        return;
+    }
 
-    if (locked || moves <= 0) return;
 
-    const cell = event.currentTarget;
+    const cell =
+        event.currentTarget;
 
     const row =
-        Number(cell.dataset.row);
+        Number(
+            cell.dataset.row
+        );
 
     const col =
-        Number(cell.dataset.col);
+        Number(
+            cell.dataset.col
+        );
 
 
     /* FIRST JEWEL */
@@ -383,7 +913,9 @@ function selectJewel(event) {
             element: cell
         };
 
-        cell.classList.add("selected");
+        cell.classList.add(
+            "selected"
+        );
 
         return;
     }
@@ -396,7 +928,9 @@ function selectJewel(event) {
         firstSelected.col === col
     ) {
 
-        cell.classList.remove("selected");
+        cell.classList.remove(
+            "selected"
+        );
 
         firstSelected = null;
 
@@ -412,7 +946,9 @@ function selectJewel(event) {
         element: cell
     };
 
-    cell.classList.add("selected");
+    cell.classList.add(
+        "selected"
+    );
 
 
     /* CHECK ADJACENT */
@@ -433,18 +969,25 @@ function selectJewel(event) {
         setTimeout(() => {
 
             if (firstSelected) {
+
                 firstSelected.element
                     .classList
-                    .remove("selected");
+                    .remove(
+                        "selected"
+                    );
             }
 
             if (secondSelected) {
+
                 secondSelected.element
                     .classList
-                    .remove("selected");
+                    .remove(
+                        "selected"
+                    );
             }
 
             firstSelected = null;
+
             secondSelected = null;
 
         }, 300);
@@ -459,13 +1002,19 @@ function selectJewel(event) {
 function isAdjacent(a, b) {
 
     const rowDifference =
-        Math.abs(a.row - b.row);
+        Math.abs(
+            a.row - b.row
+        );
 
     const colDifference =
-        Math.abs(a.col - b.col);
+        Math.abs(
+            a.col - b.col
+        );
 
     return (
-        rowDifference + colDifference === 1
+        rowDifference +
+        colDifference ===
+        1
     );
 }
 
@@ -475,14 +1024,34 @@ function isAdjacent(a, b) {
 ========================= */
 
 function swapJewels() {
+
     playMoveSound();
 
-    const r1 = firstSelected.row;
-    const c1 = firstSelected.col;
 
-    const r2 = secondSelected.row;
-    const c2 = secondSelected.col;
+    const r1 =
+        firstSelected.row;
 
+    const c1 =
+        firstSelected.col;
+
+    const r2 =
+        secondSelected.row;
+
+    const c2 =
+        secondSelected.col;
+
+
+    /* SAVE SWAP */
+
+    lastSwap = {
+        r1: r1,
+        c1: c1,
+        r2: r2,
+        c2: c2
+    };
+
+
+    /* SWAP */
 
     const temp =
         boardData[r1][c1];
@@ -495,15 +1064,21 @@ function swapJewels() {
 
 
     firstSelected = null;
+
     secondSelected = null;
+
+
+    /* ONE MOVE */
 
     moves--;
 
-    movesDisplay.textContent = moves;
+    movesDisplay.textContent =
+        moves;
+
 
     drawBoard();
 
-    checkMatches();
+    checkMatches(true);
 }
 
 
@@ -511,7 +1086,9 @@ function swapJewels() {
    FIND MATCHES
 ========================= */
 
-function checkMatches() {
+function checkMatches(
+    isPlayerMove = true
+) {
 
     let matches = [];
 
@@ -535,8 +1112,10 @@ function checkMatches() {
 
             if (
                 jewel &&
-                jewel === boardData[row][col + 1] &&
-                jewel === boardData[row][col + 2]
+                jewel ===
+                boardData[row][col + 1] &&
+                jewel ===
+                boardData[row][col + 2]
             ) {
 
                 matches.push(
@@ -547,6 +1126,7 @@ function checkMatches() {
             }
         }
     }
+
 
     /* VERTICAL */
 
@@ -567,8 +1147,10 @@ function checkMatches() {
 
             if (
                 jewel &&
-                jewel === boardData[row + 1][col] &&
-                jewel === boardData[row + 2][col]
+                jewel ===
+                boardData[row + 1][col] &&
+                jewel ===
+                boardData[row + 2][col]
             ) {
 
                 matches.push(
@@ -585,42 +1167,57 @@ function checkMatches() {
 
     const uniqueMatches = [];
 
-    matches.forEach(match => {
+    matches.forEach(
+        match => {
 
-        const exists =
-            uniqueMatches.some(item =>
-                item[0] === match[0] &&
-                item[1] === match[1]
-            );
+            const exists =
+                uniqueMatches.some(
+                    item =>
+                        item[0] ===
+                            match[0] &&
+                        item[1] ===
+                            match[1]
+                );
 
-        if (!exists) {
-            uniqueMatches.push(match);
+            if (!exists) {
+                uniqueMatches.push(
+                    match
+                );
+            }
         }
-    });
+    );
 
 
     /* NO MATCH */
-   if (uniqueMatches.length === 0) {
 
-    locked = false;
+    if (
+        uniqueMatches.length === 0
+    ) {
 
-    if (moves <= 0) {
-        gameOver();
+        /*
+        Sirf player ke direct move par
+        wrong move count hoga.
+        Cascade ke baad nahi.
+        */
+
+        if (isPlayerMove) {
+
+            playWrongSound();
+
+            undoWrongMove();
+
+            loseLife();
+
+        } else {
+
+            locked = false;
+        }
+
         return;
     }
 
-    // Check if any possible move exists
-    if (!hasPossibleMove()) {
-        setTimeout(() => {
-            shuffleBoard();
-        }, 300);
-    }
 
-    return;
-}
-
-
-    /* SOUND */
+    /* MATCH FOUND */
 
     playMatchSound();
 
@@ -630,367 +1227,10 @@ function checkMatches() {
     score +=
         uniqueMatches.length * 10;
 
-    scoreDisplay.textContent = score;
-    checkLevelUp();
-    
-if (score > highScore) {
+    scoreDisplay.textContent =
+        score;
 
-    highScore = score;
 
-    highScoreDisplay.textContent =
-        highScore;
+    /* HIGH SCORE */
 
-    localStorage.setItem(
-        "jewelryHighScore",
-        highScore
-    );
-}
-
-    /* ANIMATION */
-
-    uniqueMatches.forEach(match => {
-
-        const index =
-            match[0] * columns + match[1];
-
-        const cell =
-            board.children[index];
-
-        if (cell) {
-
-            cell.classList.add("matching");
-        }
-    });
-
-
-    /* REMOVE AFTER ANIMATION */
-
-    setTimeout(() => {
-
-        uniqueMatches.forEach(match => {
-
-            boardData[match[0]][match[1]] =
-                null;
-        });
-
-        dropJewels();
-
-    }, 450);
-}
-function checkLevelUp() {
-
-    if (score >= levelTarget) {
-
-        level++;
-
-        levelTarget += 500;
-
-        // Reduce moves with each level
-        levelMoves = Math.max(
-            10,
-            30 - ((level - 1) * 2)
-        );
-
-        moves = levelMoves;
-
-        levelDisplay.textContent = level;
-        movesDisplay.textContent = moves;
-
-        showLevelMessage();
-    }
-}
-function showLevelMessage() {
-
-    setTimeout(() => {
-
-        alert(
-            "✨ LEVEL UP! ✨\n\n" +
-            "Welcome to Level " +
-            level +
-            " 💎"
-        );
-
-    }, 200);
-}
-
-/* =========================
-   CHECK POSSIBLE MOVE
-========================= */
-
-function hasPossibleMove() {
-
-    for (let row = 0; row < rows; row++) {
-
-        for (let col = 0; col < columns; col++) {
-
-            // RIGHT
-            if (col < columns - 1) {
-
-                swapBoardCells(row, col, row, col + 1);
-
-                if (hasMatchOnBoard()) {
-
-                    swapBoardCells(row, col, row, col + 1);
-
-                    return true;
-                }
-
-                swapBoardCells(row, col, row, col + 1);
-            }
-
-            // DOWN
-            if (row < rows - 1) {
-
-                swapBoardCells(row, col, row + 1, col);
-
-                if (hasMatchOnBoard()) {
-
-                    swapBoardCells(row, col, row + 1, col);
-
-                    return true;
-                }
-
-                swapBoardCells(row, col, row + 1, col);
-            }
-        }
-    }
-
-    return false;
-}
-
-
-/* TEMPORARY SWAP */
-
-function swapBoardCells(r1, c1, r2, c2) {
-
-    const temp = boardData[r1][c1];
-
-    boardData[r1][c1] =
-        boardData[r2][c2];
-
-    boardData[r2][c2] =
-        temp;
-}
-
-
-/* CHECK EXISTING MATCH */
-
-function hasMatchOnBoard() {
-
-    // Horizontal
-    for (let row = 0; row < rows; row++) {
-
-        for (let col = 0; col < columns - 2; col++) {
-
-            const a = boardData[row][col];
-
-            if (
-                a &&
-                a === boardData[row][col + 1] &&
-                a === boardData[row][col + 2]
-            ) {
-                return true;
-            }
-        }
-    }
-
-
-    // Vertical
-    for (let row = 0; row < rows - 2; row++) {
-
-        for (let col = 0; col < columns; col++) {
-
-            const a = boardData[row][col];
-
-            if (
-                a &&
-                a === boardData[row + 1][col] &&
-                a === boardData[row + 2][col]
-            ) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-/* =========================
-   AUTOMATIC SHUFFLE
-========================= */
-
-function shuffleBoard() {
-
-    locked = true;
-
-    let allJewels = [];
-
-    for (let row = 0; row < rows; row++) {
-
-        for (let col = 0; col < columns; col++) {
-
-            allJewels.push(
-                boardData[row][col]
-            );
-        }
-    }
-
-
-    // Shuffle until playable
-    let attempts = 0;
-
-    do {
-
-        allJewels.sort(
-            () => Math.random() - 0.5
-        );
-
-        let index = 0;
-
-        for (let row = 0; row < rows; row++) {
-
-            for (let col = 0; col < columns; col++) {
-
-                boardData[row][col] =
-                    allJewels[index++];
-
-            }
-        }
-
-        attempts++;
-
-    } while (
-        !hasPossibleMove() &&
-        attempts < 100
-    );
-
-
-    drawBoard();
-
-    locked = false;
-}
-/* =========================
-   DROP JEWELS
-========================= */
-
-function dropJewels() {
-
-    for (
-        let col = 0;
-        col < columns;
-        col++
-    ) {
-
-        let emptySpaces = 0;
-
-
-        /* MOVE JEWELS DOWN */
-
-        for (
-            let row = rows - 1;
-            row >= 0;
-            row--
-        ) {
-
-            if (
-                boardData[row][col] === null
-            ) {
-
-                emptySpaces++;
-
-            } else if (
-                emptySpaces > 0
-            ) {
-
-                boardData[
-                    row + emptySpaces
-                ][col] =
-                    boardData[row][col];
-
-                boardData[row][col] =
-                    null;
-            }
-        }
-
-
-        /* CREATE NEW JEWELS */
-
-        for (
-            let row = 0;
-            row < emptySpaces;
-            row++
-        ) {
-
-            boardData[row][col] =
-                jewels[
-                    Math.floor(
-                        Math.random() *
-                        jewels.length
-                    )
-                ];
-        }
-    }
-
-
-    drawBoard();
-
-
-    /* CHECK CASCADE */
-
-    setTimeout(() => {
-
-        checkMatches();
-
-    }, 250);
-}
-
-
-/* =========================
-   GAME OVER
-========================= */
-
-function gameOver() {
-clearInterval(timerInterval);
-    locked = true;
-
-    setTimeout(() => {
-
-        alert(
-            "💎 Game Over! 💎\n\n" +
-            "Your Score: " +
-            score
-        );
-
-    }, 200);
-}
-
-
-/* =========================
-   RESTART
-========================= */
-
-restartBtn.addEventListener(
-    "click",
-    startGame
-);
-
-
-/* =========================
-   BACK TO ASH LAVISH JEWELS
-========================= */
-
-backBtn.addEventListener(
-    "click",
-    function() {
-
-        window.location.href =
-            "index.html";
-    }
-);
-
-
-/* =========================
-   START
-========================= */
-
-startGame();
+  
