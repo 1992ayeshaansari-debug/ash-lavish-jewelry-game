@@ -1232,5 +1232,650 @@ function checkMatches(
 
 
     /* HIGH SCORE */
+if (
+        score > highScore
+    ) {
 
-  
+        highScore = score;
+
+        highScoreDisplay.textContent =
+            highScore;
+
+        localStorage.setItem(
+            "jewelryHighScore",
+            highScore
+        );
+    }
+
+
+    /* LEVEL UP */
+
+    checkLevelUp();
+
+
+    /* MATCH ANIMATION */
+
+    uniqueMatches.forEach(
+        match => {
+
+            const index =
+                match[0] *
+                    columns +
+                match[1];
+
+            const cell =
+                board.children[index];
+
+            if (cell) {
+
+                cell.classList.add(
+                    "matching"
+                );
+            }
+        }
+    );
+
+
+    /* REMOVE */
+
+    setTimeout(() => {
+
+        uniqueMatches.forEach(
+            match => {
+
+                boardData[
+                    match[0]
+                ][
+                    match[1]
+                ] = null;
+            }
+        );
+
+        dropJewels();
+
+    }, 450);
+}
+
+
+/* =========================
+   UNDO WRONG MOVE
+========================= */
+
+function undoWrongMove() {
+
+    if (!lastSwap) {
+        return;
+    }
+
+
+    const r1 =
+        lastSwap.r1;
+
+    const c1 =
+        lastSwap.c1;
+
+    const r2 =
+        lastSwap.r2;
+
+    const c2 =
+        lastSwap.c2;
+
+
+    const temp =
+        boardData[r1][c1];
+
+    boardData[r1][c1] =
+        boardData[r2][c2];
+
+    boardData[r2][c2] =
+        temp;
+
+
+    lastSwap = null;
+
+
+    drawBoard();
+}
+
+
+/* =========================
+   LOSE LIFE
+========================= */
+
+function loseLife() {
+
+    lives--;
+
+    updateLives();
+
+
+    /* 3 WRONG MOVES */
+
+    if (
+        lives <= 0
+    ) {
+
+        gameOver();
+
+        return;
+    }
+
+
+    /* PLAYER CAN CONTINUE */
+
+    locked = false;
+}
+
+
+/* =========================
+   LEVEL UP
+========================= */
+
+function checkLevelUp() {
+
+    if (
+        score >= levelTarget
+    ) {
+
+        level++;
+
+        levelTarget += 500;
+
+
+        levelMoves =
+            Math.max(
+                10,
+                30 -
+                (
+                    (level - 1) * 2
+                )
+            );
+
+
+        moves = levelMoves;
+
+
+        levelDisplay.textContent =
+            level;
+
+        movesDisplay.textContent =
+            moves;
+
+
+        showLevelMessage();
+    }
+}
+
+
+/* =========================
+   LEVEL UP MESSAGE
+========================= */
+
+function showLevelMessage() {
+
+    playLevelUpSound();
+
+    const messageTitle =
+        document.getElementById("messageTitle");
+
+    const messageText =
+        document.getElementById("messageText");
+
+    messageTitle.textContent =
+        "✨ LEVEL UP! ✨";
+
+    messageText.textContent =
+        "Welcome to Level " +
+        level +
+        " 💎";
+
+    playAgainBtn.style.display =
+        "none";
+
+    gameMessage.classList.remove(
+        "hidden"
+    );
+
+    /* LEVEL UP POPUP AUTO CLOSE */
+
+    setTimeout(() => {
+
+        gameMessage.classList.add(
+            "hidden"
+        );
+
+        playAgainBtn.style.display =
+            "block";
+
+        locked = false;
+
+    }, 2500);
+}
+
+/* =========================
+   POSSIBLE MOVE CHECK
+========================= */
+
+function hasPossibleMove() {
+
+    for (
+        let row = 0;
+        row < rows;
+        row++
+    ) {
+
+        for (
+            let col = 0;
+            col < columns;
+            col++
+        ) {
+
+
+            /* RIGHT */
+
+            if (
+                col < columns - 1
+            ) {
+
+                swapBoardCells(
+                    row,
+                    col,
+                    row,
+                    col + 1
+                );
+
+                if (
+                    hasMatchOnBoard()
+                ) {
+
+                    swapBoardCells(
+                        row,
+                        col,
+                        row,
+                        col + 1
+                    );
+
+                    return true;
+                }
+
+                swapBoardCells(
+                    row,
+                    col,
+                    row,
+                    col + 1
+                );
+            }
+
+
+            /* DOWN */
+
+            if (
+                row < rows - 1
+            ) {
+
+                swapBoardCells(
+                    row,
+                    col,
+                    row + 1,
+                    col
+                );
+
+                if (
+                    hasMatchOnBoard()
+                ) {
+
+                    swapBoardCells(
+                        row,
+                        col,
+                        row + 1,
+                        col
+                    );
+
+                    return true;
+                }
+
+                swapBoardCells(
+                    row,
+                    col,
+                    row + 1,
+                    col
+                );
+            }
+        }
+    }
+
+    return false;
+}
+
+  /* =========================
+   TEMPORARY SWAP
+========================= */
+
+function swapBoardCells(
+    r1,
+    c1,
+    r2,
+    c2
+) {
+
+    const temp =
+        boardData[r1][c1];
+
+    boardData[r1][c1] =
+        boardData[r2][c2];
+
+    boardData[r2][c2] =
+        temp;
+}
+
+
+/* =========================
+   CHECK EXISTING MATCH
+========================= */
+
+function hasMatchOnBoard() {
+
+    /* HORIZONTAL */
+
+    for (
+        let row = 0;
+        row < rows;
+        row++
+    ) {
+
+        for (
+            let col = 0;
+            col < columns - 2;
+            col++
+        ) {
+
+            const a =
+                boardData[row][col];
+
+            if (
+                a &&
+                a ===
+                boardData[row][col + 1] &&
+                a ===
+                boardData[row][col + 2]
+            ) {
+
+                return true;
+            }
+        }
+    }
+
+
+    /* VERTICAL */
+
+    for (
+        let row = 0;
+        row < rows - 2;
+        row++
+    ) {
+
+        for (
+            let col = 0;
+            col < columns;
+            col++
+        ) {
+
+            const a =
+                boardData[row][col];
+
+            if (
+                a &&
+                a ===
+                boardData[row + 1][col] &&
+                a ===
+                boardData[row + 2][col]
+            ) {
+
+                return true;
+            }
+        }
+    }
+
+
+    return false;
+}
+/* =========================
+   SHUFFLE BOARD
+========================= */
+
+function shuffleBoard() {
+
+    locked = true;
+
+    playShuffleSound();
+
+    let allJewels = [];
+
+
+    for (
+        let row = 0;
+        row < rows;
+        row++
+    ) {
+
+        for (
+            let col = 0;
+            col < columns;
+            col++
+        ) {
+
+            allJewels.push(
+                boardData[row][col]
+            );
+        }
+    }
+
+
+    let attempts = 0;
+
+
+    do {
+
+        allJewels.sort(
+            () =>
+                Math.random() -
+                0.5
+        );
+
+
+        let index = 0;
+
+
+        for (
+            let row = 0;
+            row < rows;
+            row++
+        ) {
+
+            for (
+                let col = 0;
+                col < columns;
+                col++
+            ) {
+
+                boardData[row][col] =
+                    allJewels[index++];
+            }
+        }
+
+        attempts++;
+
+    } while (
+        !hasPossibleMove() &&
+        attempts < 100
+    );
+
+
+    drawBoard();
+
+    locked = false;
+}
+
+
+/* =========================
+   DROP JEWELS
+========================= */
+
+function dropJewels() {
+
+    for (
+        let col = 0;
+        col < columns;
+        col++
+    ) {
+
+        let emptySpaces = 0;
+
+
+        /* MOVE JEWELS DOWN */
+
+        for (
+            let row = rows - 1;
+            row >= 0;
+            row--
+        ) {
+
+            if (
+                boardData[row][col] ===
+                null
+            ) {
+
+                emptySpaces++;
+
+            } else if (
+                emptySpaces > 0
+            ) {
+
+                boardData[
+                    row + emptySpaces
+                ][col] =
+                    boardData[row][col];
+
+                boardData[row][col] =
+                    null;
+            }
+        }
+
+
+        /* CREATE NEW JEWELS */
+
+        for (
+            let row = 0;
+            row < emptySpaces;
+            row++
+        ) {
+
+            boardData[row][col] =
+                jewels[
+                    Math.floor(
+                        Math.random() *
+                        jewels.length
+                    )
+                ];
+        }
+    }
+
+
+    drawBoard();
+
+
+    /* CHECK CASCADE */
+
+    setTimeout(() => {
+
+        checkMatches(false);
+
+    }, 250);
+}
+
+
+/* =========================
+   GAME OVER
+========================= */
+
+function gameOver() {
+
+    if (gameEnded) {
+        return;
+    }
+
+    gameEnded = true;
+
+    locked = true;
+
+    playGameOverSound();
+
+
+    const messageTitle =
+        document.getElementById(
+            "messageTitle"
+        );
+
+    const messageText =
+        document.getElementById(
+            "messageText"
+        );
+
+
+    messageTitle.textContent =
+        "💎 GAME OVER 💎";
+
+    messageText.textContent =
+        "Your Score: " +
+        score;
+
+
+    playAgainBtn.style.display =
+        "block";
+
+
+    gameMessage.classList.remove(
+        "hidden"
+    );
+}
+
+
+/* =========================
+   RESTART
+========================= */
+
+restartBtn.addEventListener(
+    "click",
+    startGame
+);
+
+
+/* =========================
+   BACK TO ASH LAVISH JEWELS
+========================= */
+
+backBtn.addEventListener(
+    "click",
+    function() {
+
+        window.location.href =
+            "index.html";
+    }
+);
+
+
+/* =========================
+   PLAY AGAIN
+========================= */
+
+playAgainBtn.addEventListener(
+    "click",
+    startGame
+);
+
+
+/* =========================
+   START GAME
+========================= */
+
+startGame();
