@@ -6,109 +6,201 @@
 
 body {
     min-height: 100vh;
+
     background:
-        radial-gradient(circle at top, #2a220c 0%, #090909 35%, #030303 100%);
+        radial-gradient(
+            circle at top,
+            #2a220c 0%,
+            #090909 35%,
+            #030303 100%
+        );
+
     color: #fff;
+
     font-family: Georgia, serif;
+
     text-align: center;
+
     overflow-x: hidden;
 }
 
+
+/* =========================
+   GAME CONTAINER
+========================= */
+
 .game-container {
     width: 100%;
-    max-width: 520px;
+
+    max-width: 600px;
+
     margin: auto;
-    padding: 25px 14px 45px;
+
+    padding: 16px 10px 35px;
 }
 
-/* TITLE */
+
+/* =========================
+   TITLE
+========================= */
 
 h1 {
     color: #e5bd45;
-    font-size: 34px;
-    letter-spacing: 1px;
-    text-shadow: 0 0 12px rgba(229, 189, 69, 0.45);
-    margin-bottom: 8px;
+
+    font-size: 27px;
+
+    letter-spacing: 0.7px;
+
+    text-shadow:
+        0 0 10px
+        rgba(229, 189, 69, 0.45);
+
+    margin-bottom: 4px;
 }
 
 .subtitle {
-    color: #ddd;
-    font-size: 16px;
-    margin-bottom: 22px;
+    color: #aaa;
+
+    font-size: 13px;
+
+    margin-bottom: 13px;
 }
 
-/* SCORE / MOVES */
+
+/* =========================
+   GAME INFO
+========================= */
 
 .game-info {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 0 auto 22px;
-    max-width: 430px;
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 6px;
+
+    margin: 0 auto 12px;
+
+    width: 100%;
+
+    max-width: 500px;
 }
 
 .game-info div {
-    flex: 1;
-    background: linear-gradient(145deg, #1d1d1d, #101010);
-    border: 1px solid #d4af37;
-    border-radius: 16px;
-    padding: 12px 10px;
+    background:
+        linear-gradient(
+            145deg,
+            #1d1d1d,
+            #101010
+        );
+
+    border: 1px solid #b9962e;
+
+    border-radius: 10px;
+
+    padding: 6px 4px;
+
     box-shadow:
-        0 5px 20px rgba(0, 0, 0, 0.5),
-        inset 0 0 15px rgba(212, 175, 55, 0.06);
+        0 3px 10px
+        rgba(0, 0, 0, 0.45),
+
+        inset 0 0 10px
+        rgba(212, 175, 55, 0.05);
 }
 
 .game-info span {
     display: block;
-    color: #aaa;
-    font-size: 13px;
-    margin-bottom: 5px;
+
+    color: #999;
+
+    font-size: 10px;
+
+    margin-bottom: 2px;
 }
 
 .game-info strong {
     color: #e5bd45;
-    font-size: 24px;
+
+    font-size: 17px;
 }
 
-/* GAME BOARD */
+
+/* =========================
+   GAME BOARD
+========================= */
 
 .game-board {
     width: 100%;
-    max-width: 450px;
-    margin: auto;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
-    padding: 9px;
 
-    background: linear-gradient(145deg, #1c1c1c, #080808);
+    max-width: 570px;
+
+    margin: auto;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(8, 1fr);
+
+    gap: 4px;
+
+    padding: 7px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #1c1c1c,
+            #080808
+        );
 
     border: 2px solid #d4af37;
-    border-radius: 20px;
+
+    border-radius: 17px;
 
     box-shadow:
-        0 0 25px rgba(212, 175, 55, 0.18),
-        inset 0 0 20px rgba(212, 175, 55, 0.04);
+        0 0 25px
+        rgba(212, 175, 55, 0.18),
+
+        inset 0 0 20px
+        rgba(212, 175, 55, 0.04);
 }
 
-/* JEWEL */
+
+/* =========================
+   JEWEL
+========================= */
 
 .jewel {
     aspect-ratio: 1 / 1;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
-    background: linear-gradient(145deg, #292929, #171717);
+    background:
+        linear-gradient(
+            145deg,
+            #292929,
+            #171717
+        );
 
-    border: 1px solid #454545;
-    border-radius: 12px;
+    border: 1px solid #414141;
 
-    font-size: clamp(24px, 7vw, 36px);
+    border-radius: 8px;
+
+    font-size: clamp(
+        19px,
+        5vw,
+        29px
+    );
 
     cursor: pointer;
+
     user-select: none;
+
+    -webkit-tap-highlight-color:
+        transparent;
 
     transition:
         transform 0.18s ease,
@@ -117,67 +209,99 @@ h1 {
         background 0.18s ease;
 
     box-shadow:
-        inset 0 0 10px rgba(255, 255, 255, 0.03);
+        inset 0 0 8px
+        rgba(255, 255, 255, 0.03);
 }
 
-/* TAP EFFECT */
+
+/* =========================
+   TAP EFFECT
+========================= */
 
 .jewel:active {
-    transform: scale(0.82);
+    transform: scale(0.84);
 }
 
-/* SELECTED JEWEL */
+
+/* =========================
+   SELECTED JEWEL
+========================= */
 
 .jewel.selected {
     border: 2px solid #f7d96a;
 
-    background: linear-gradient(145deg, #3b3012, #171717);
+    background:
+        linear-gradient(
+            145deg,
+            #3b3012,
+            #171717
+        );
 
     transform: scale(0.91);
 
     box-shadow:
-        0 0 12px rgba(247, 217, 106, 0.75),
-        inset 0 0 12px rgba(247, 217, 106, 0.12);
+        0 0 11px
+        rgba(247, 217, 106, 0.75),
+
+        inset 0 0 10px
+        rgba(247, 217, 106, 0.12);
 }
 
-/* MATCH ANIMATION */
+
+/* =========================
+   MATCH ANIMATION
+========================= */
 
 .jewel.matching {
-    animation: jewelMatch 0.45s ease forwards;
+    animation:
+        jewelMatch
+        0.45s
+        ease
+        forwards;
 }
 
 @keyframes jewelMatch {
 
     0% {
         transform: scale(1);
+
         opacity: 1;
     }
 
     40% {
-        transform: scale(1.25) rotate(8deg);
+        transform:
+            scale(1.25)
+            rotate(8deg);
     }
 
     100% {
         transform: scale(0);
+
         opacity: 0;
     }
 }
 
-/* BUTTONS */
+
+/* =========================
+   BUTTONS
+========================= */
 
 .restart-btn,
 .back-btn {
-    width: 90%;
-    max-width: 380px;
+    width: 88%;
 
-    padding: 15px;
+    max-width: 340px;
 
-    margin-top: 22px;
+    padding: 12px;
 
-    border-radius: 30px;
+    margin-top: 14px;
+
+    border-radius: 25px;
 
     font-family: Georgia, serif;
-    font-size: 17px;
+
+    font-size: 15px;
+
     font-weight: bold;
 
     cursor: pointer;
@@ -188,22 +312,32 @@ h1 {
 }
 
 .restart-btn {
-    background: linear-gradient(135deg, #f0c84b, #b88a18);
+    background:
+        linear-gradient(
+            135deg,
+            #f0c84b,
+            #b88a18
+        );
+
     color: #111;
+
     border: none;
 
     box-shadow:
-        0 5px 18px rgba(212, 175, 55, 0.25);
+        0 5px 15px
+        rgba(212, 175, 55, 0.25);
 }
 
 .back-btn {
     background: #171717;
+
     color: #e5bd45;
 
     border: 1px solid #d4af37;
 
     box-shadow:
-        0 5px 18px rgba(0, 0, 0, 0.4);
+        0 5px 15px
+        rgba(0, 0, 0, 0.4);
 }
 
 .restart-btn:active,
@@ -211,38 +345,435 @@ h1 {
     transform: scale(0.96);
 }
 
-/* MOBILE */
 
-@media (max-width: 380px) {
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 480px) {
 
     .game-container {
-        padding-left: 9px;
-        padding-right: 9px;
+        padding:
+            12px 7px 28px;
     }
 
     h1 {
-        font-size: 28px;
+        font-size: 23px;
     }
 
     .subtitle {
-        font-size: 14px;
+        font-size: 11px;
+
+        margin-bottom: 10px;
     }
 
-    .game-board {
+    .game-info {
         gap: 4px;
-        padding: 6px;
-        border-radius: 16px;
-    }
 
-    .jewel {
-        border-radius: 9px;
+        margin-bottom: 9px;
     }
 
     .game-info div {
-        padding: 9px 5px;
+        padding: 5px 2px;
+
+        border-radius: 8px;
+    }
+
+    .game-info span {
+        font-size: 9px;
     }
 
     .game-info strong {
-        font-size: 21px;
+        font-size: 15px;
+    }
+
+    .game-board {
+        gap: 3px;
+
+        padding: 5px;
+
+        border-radius: 14px;
+    }
+
+    .jewel {
+        border-radius: 6px;
+
+        font-size:
+            clamp(
+                17px,
+                5.2vw,
+                25px
+            );
+    }
+
+    .restart-btn,
+    .back-btn {
+        font-size: 14px;
+
+        padding: 11px;
+
+        margin-top: 11px;
     }
 }
+
+
+/* =========================
+   VERY SMALL MOBILE
+========================= */
+
+@media (max-width: 360px) {
+
+    h1 {
+        font-size: 21px;
+    }
+
+    .game-info strong {
+        font-size: 14px;
+    }
+
+    .game-info span {
+        font-size: 8px;
+    }
+
+    .game-board {
+        gap: 2px;
+
+        padding: 4px;
+    }
+
+    .jewel {
+        border-radius: 5px;
+
+        font-size:
+            clamp(
+                15px,
+                5vw,
+                22px
+            );
+    }
+}
+
+/* =========================
+   GAME MESSAGE POPUP
+========================= */
+
+.game-message {
+    position: fixed;
+
+    inset: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.78);
+
+    z-index: 9999;
+
+    padding: 20px;
+
+    animation: popupBackground 0.25s ease;
+}
+
+.game-message.hidden {
+    display: none;
+}
+
+.message-box {
+    width: 90%;
+
+    max-width: 350px;
+
+    padding: 28px 20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #211b0b,
+            #0d0d0d
+        );
+
+    border: 2px solid #d4af37;
+
+    border-radius: 22px;
+
+    box-shadow:
+        0 0 35px
+        rgba(212, 175, 55, 0.35);
+
+    text-align: center;
+
+    animation: popupBox 0.3s ease;
+}
+
+.message-title {
+    color: #e5bd45;
+
+    font-size: 25px;
+
+    font-weight: bold;
+
+    margin-bottom: 12px;
+}
+
+.message-text {
+    color: #fff;
+
+    font-size: 17px;
+
+    line-height: 1.6;
+
+    margin-bottom: 20px;
+}
+
+.play-again-btn {
+    width: 85%;
+
+    padding: 13px;
+
+    border: none;
+
+    border-radius: 25px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f0c84b,
+            #b88a18
+        );
+
+    color: #111;
+
+    font-family: Georgia, serif;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.play-again-btn:active {
+    transform: scale(0.96);
+}
+
+
+@keyframes popupBackground {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes popupBox {
+
+    from {
+        transform: scale(0.85);
+
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+
+        opacity: 1;
+    }
+}
+
+/* =========================
+   ANIMATED GAME OVER POPUP
+========================= */
+
+.game-message {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.78);
+
+    z-index: 9999;
+
+    animation: popupFade 0.3s ease;
+}
+
+.game-message.hidden {
+    display: none;
+}
+
+.message-box {
+    width: 90%;
+    max-width: 350px;
+
+    padding: 30px 20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #27200d,
+            #0b0b0b
+        );
+
+    border: 2px solid #d4af37;
+
+    border-radius: 24px;
+
+    text-align: center;
+
+    box-shadow:
+        0 0 35px
+        rgba(212, 175, 55, 0.4);
+
+    animation: popupScale 0.35s ease;
+}
+
+.message-title {
+    color: #e5bd45;
+
+    font-size: 26px;
+
+    font-weight: bold;
+
+    margin-bottom: 12px;
+
+    text-shadow:
+        0 0 12px
+        rgba(229, 189, 69, 0.5);
+}
+
+.message-text {
+    color: white;
+
+    font-size: 17px;
+
+    margin-bottom: 22px;
+}
+
+.play-again-btn {
+    width: 85%;
+
+    padding: 14px;
+
+    border: none;
+
+    border-radius: 30px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f0c84b,
+            #b88a18
+        );
+
+    color: #111;
+
+    font-family: Georgia, serif;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 5px 18px
+        rgba(212, 175, 55, 0.3);
+}
+
+.play-again-btn:active {
+    transform: scale(0.96);
+}
+
+
+@keyframes popupFade {
+
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+
+@keyframes popupScale {
+
+    from {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* =========================
+   SOUND CONTROLS
+========================= */
+
+.sound-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 auto 18px;
+    width: 100%;
+    max-width: 430px;
+}
+
+.sound-btn {
+    flex: 1;
+    padding: 10px 8px;
+
+    background: linear-gradient(
+        145deg,
+        #1d1d1d,
+        #0d0d0d
+    );
+
+    color: #e5bd45;
+
+    border: 1px solid #d4af37;
+    border-radius: 20px;
+
+    font-family: Georgia, serif;
+    font-size: 14px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.4);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.sound-btn:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 380px) {
+
+    .sound-btn {
+        font-size: 12px;
+        padding: 9px 5px;
+    }
+
+    .sound-controls {
+        gap: 7px;
+    }
+    }
